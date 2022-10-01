@@ -1,0 +1,35 @@
+- hosts: jenkins
+  remote_user: ec2-user
+  become: yes
+  vars:
+     ports: 9000
+  tasks:  
+     - name: i am going to install jenkins from yum repo
+       yum_repository:
+          name: jenkins
+          description: jenkins YUM repo
+          baseurl: http://pkg.jenkins.io/redhat
+          gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+     - name: i am going to install java and jenkins
+       yum:
+         name: "{{ item }}"
+         state: present
+       loop:
+          - java
+          - jenkins
+     - name: Ensure SELinux is set to enforcing mode
+       lineinfile:
+         path: /etc/sysconfig/jenkins
+         regexp: '^JENKINS_PORT='
+         line: "JENKINS_PORT={{ ports }}"
+       notify:
+           - jenkins restart
+     - name: i am going to start jenkins
+       service:
+           name: jenkins
+           state: started
+ handlers:
+     - name: jenkins restart
+       service:
+           name: jenkins
+           state: restarted
