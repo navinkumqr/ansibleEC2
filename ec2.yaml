@@ -1,0 +1,13 @@
+- hosts: localhost
+  remote_user: ec2-user
+  become: yes
+  tasks:
+     - name: iam going to create ec2
+       amazon.aws.ec2_instance:
+         key_name: Terraform
+         region: "ap-south-1"
+         instance_type: t2.micro
+         image: ami-041aae81ed72817fd
+         count: 1
+         vpc_subnet_id: subnet-of8855af65819636b
+         assign_public_ip: yes
