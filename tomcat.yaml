@@ -1,0 +1,38 @@
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  vars:
+    tomcat_port: 8060
+  tasks:  
+     - name: i am going to yum update
+       yum:
+          name: '*'
+          state: latest
+     - name: java 1.8 openjdk
+       yum:
+         name: java-1.8.0-openjdk
+         state: present
+     - name: tomcat download in official website zip file
+       ansible.builtin.get_url:
+         url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.67/bin/apache-tomcat-9.0.67.zip
+         dest: /usr/local
+         mode: '0777'
+     - name: unzip tomcat
+       ansible.builtin.unarchive:
+         src: /usr/local/apache-tomcat-9.0.67.zip
+         dest: /usr/local
+         remote_src: yes
+         mode: '0777'
+     - name: configuration parameter change
+       ansible.builtin.template:
+         src: ./server.xml.j2
+         dest: /usr/local/apache-tomcat-9.0.67/conf/server.xml
+         mode: '0777'
+
+     - name: going to start tomcat
+       ansible.builtin.shell: nohup /usr/local/apache-tomcat-9.0.67.zip/bin/startup.sh &
+     - name: deployment of war file
+       ansible.builtin.copy:
+          src: ./sample.war
+          dest: /usr/local/apache-tomcat-9.0.67/webapps
+          mode: '0777'
